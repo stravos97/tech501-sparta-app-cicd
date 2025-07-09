@@ -26,7 +26,7 @@ pipeline {
                         sh 'sleep 10' // Add a delay to ensure MongoDB is fully up and running before seeding
                     } finally {
                         mongo.stop()
-                        mongo.remove()
+                        mongo.remove(true)
                     }
                 }
             }
@@ -60,7 +60,7 @@ pipeline {
                         '''
                     } finally {
                         mongo.stop()
-                        mongo.remove()
+                        mongo.remove(true)
                     }
                 }
             }
@@ -74,7 +74,7 @@ pipeline {
                         sh 'npm test'
                     } finally {
                         mongo.stop()
-                        mongo.remove()
+                        mongo.remove(true)
                     }
                 }
             }
