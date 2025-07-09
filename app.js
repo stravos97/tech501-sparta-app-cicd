@@ -15,19 +15,33 @@ app.get('/' , function(req , res){
 });
 
 // connect to database
-if(process.env.DB_HOST) {
-  mongoose.connect(process.env.DB_HOST);
-
-  app.get("/posts", async function(req, res) {
-    try {
-      const posts = await Post.find({});
-      res.render("posts/index", { posts: posts });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).send(err);
-    }
-  });
+let dbConnected = false;
+if (process.env.DB_HOST) {
+  mongoose.connect(process.env.DB_HOST)
+    .then(() => {
+      console.log('MongoDB connected successfully.');
+      dbConnected = true;
+    })
+    .catch(err => {
+      console.error('MongoDB connection error:', err.message);
+      dbConnected = false;
+    });
 }
+
+// Define /posts route (always defined)
+app.get("/posts", async function(req, res) {
+  if (!dbConnected) {
+    console.warn('Database not connected. Returning empty posts array.');
+    return res.status(500).send('Database not connected'); // Return 500 if DB not connected
+  }
+  try {
+    const posts = await Post.find({});
+    res.render("posts/index", { posts: posts });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send(err);
+  }
+});
 
 app.get('/fibonacci/:n' , function(req,res){
 
@@ -44,10 +58,14 @@ app.get('/fibonacci/:n' , function(req,res){
 //   });
 // });
 
-app.listen(3000 , function(){
-  console.log('Your app is ready and listening on port 3000');
-});
+const port = 3000; // Define port
 
+// Only start the server if this file is run directly (not required as a module)
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Your app is ready and listening on port ${port}`);
+  });
+}
 
 // deliberately poorly implemented fibonnaci
 function fibonacci(n) {
@@ -62,4 +80,4 @@ function fibonacci(n) {
 
 }
 
-module.exports = app;
+module.exports = app; // Export the app for testing

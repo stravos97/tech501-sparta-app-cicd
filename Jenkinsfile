@@ -23,40 +23,31 @@ pipeline {
         }
 
         stage('Test') {
-            // This entire stage runs on the host agent, which controls Docker
+            agent {
+                docker {
+                    image 'node:20-slim'
+                }
+            }
             steps {
-                // A script block allows for more complex logic, like starting/stopping containers
                 script {
-                    def mongoContainerID // Variable to hold the container ID
+                    // Start the MongoDB container
+                    def mongoContainer = docker.image('mongo:7.0.6').run('-d --name mongo')
 
-                    try {
-                        // 1. Start the mongo container in the background and get its ID
-                        mongoContainerID = sh(
-                            script: 'docker run -d mongo:7.0.6',
-                            returnStdout: true
-                        ).trim()
+                    // Ensure the MongoDB container is running before proceeding
+                    sleep 10
 
-                        // Give the database a moment to start
-                        sh 'sleep 10'
-
-                        // CORRECTED PART:
-                        // Use docker.withRun to execute steps INSIDE a temporary Node.js container.
-                        // This container is automatically linked to the mongo container.
-                        docker.image('node:20-slim').withRun(
-                            "-e DB_HOST=mongodb://mongo:27017/posts --link ${mongoContainerID}:mongo"
-                        ) {
-                            // This command now runs INSIDE the node:20-slim container
-                            // where DB_HOST is correctly set.
-                            sh 'npm test'
-                        }
-                    } finally {
-                        // 3. This 'finally' block ALWAYS runs, even if tests fail
-                        if (mongoContainerID) {
-                            echo "Cleaning up MongoDB container: ${mongoContainerID}"
-                            // Stop and remove the database container
-                            sh "docker stop ${mongoContainerID} && docker rm ${mongoContainerID}"
-                        }
+                    // Run the tests inside the Node.js container, linking it to the MongoDB container
+                    docker.image('node:20-slim').withRun("--link ${mongoContainer.id}:mongo -e DB_HOST=mongodb://mongo:27017/posts") { c ->
+                        sh 'npm install'
+                        sh 'npm test'
                     }
+                }
+            }
+            post {
+                always {
+                    // Clean up the containers
+                    sh 'docker stop mongo || true'
+                    sh 'docker rm mongo || true'
                 }
             }
         }
