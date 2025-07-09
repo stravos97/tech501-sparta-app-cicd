@@ -23,23 +23,23 @@ pipeline {
         }
 
         stage('Test') {
-            agent {
-                docker {
-                    image 'node:20-slim'
-                }
-            }
+            agent any
             steps {
                 script {
+                    // Define the Docker images
+                    def nodeImage = docker.image('node:20-slim')
+                    def mongoImage = docker.image('mongo:7.0.6')
+
                     // Start the MongoDB container
-                    def mongoContainer = docker.image('mongo:7.0.6').run('-d --name mongo')
+                    mongoImage.withRun('-d --name mongo') { mongoContainer ->
+                        // Ensure the MongoDB container is running before proceeding
+                        sleep 10
 
-                    // Ensure the MongoDB container is running before proceeding
-                    sleep 10
-
-                    // Run the tests inside the Node.js container, linking it to the MongoDB container
-                    docker.image('node:20-slim').withRun("--link ${mongoContainer.id}:mongo -e DB_HOST=mongodb://mongo:27017/posts") { c ->
-                        sh 'npm install'
-                        sh 'npm test'
+                        // Run the tests inside the Node.js container, linking it to the MongoDB container
+                        nodeImage.withRun("--link ${mongoContainer.id}:mongo -e DB_HOST=mongodb://mongo:27017/posts") { testContainer ->
+                            sh 'npm install'
+                            sh 'npm test'
+                        }
                     }
                 }
             }
