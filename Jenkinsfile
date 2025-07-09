@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DB_HOST = 'mongodb://mongodb:27017/posts'
+        DB_HOST = 'mongodb://localhost:27017/posts'
     }
 
     tools {
