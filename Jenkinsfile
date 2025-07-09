@@ -15,14 +15,18 @@ pipeline {
         }
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                dir('app') {
+                    sh 'npm install'
+                }
             }
         }
         stage('Run Tests') {
             steps {
-                // Note: Tests related to /posts are expected to fail if DB_HOST is not set.
-                // If you wish to pass these tests, configure DB_HOST as an environment variable in Jenkins.
-                sh 'npm test'
+                dir('app') {
+                    // Note: Tests related to /posts are expected to fail if DB_HOST is not set.
+                    // If you wish to pass these tests, configure DB_HOST as an environment variable in Jenkins.
+                    sh 'npm test'
+                }
             }
         }
     }
