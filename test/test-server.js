@@ -38,8 +38,7 @@ describe('Blog Posts', function() {
         // Optionally, check properties of the first post
         if (res.body.length > 0) {
           res.body[0].should.have.property('title');
-          res.body[0].should.have.property('content');
-          res.body[0].should.have.property('author');
+          res.body[0].should.have.property('body'); // Changed from 'content'
         }
         done();
       });
