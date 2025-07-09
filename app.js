@@ -36,7 +36,7 @@ app.get("/posts", async function(req, res) {
   }
   try {
     const posts = await Post.find({});
-    res.render("posts/index", { posts: posts });
+    res.json(posts);
   } catch (err) {
     console.error(err);
     return res.status(500).send(err);
