@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:20-slim'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent any
     environment {
         DB_HOST = 'mongodb://mongodb:27017/posts'
     }
