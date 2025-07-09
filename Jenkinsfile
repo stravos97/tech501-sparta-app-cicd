@@ -2,7 +2,7 @@ pipeline {
     agent none // We will specify the agent for each stage
 
     tools {
-        nodejs 'node-20' // Assumes a 'node-20' installation is configured in Jenkins > Global Tool Configuration
+        nodejs 'Node.js 20' // Assumes a 'node-20' installation is configured in Jenkins > Global Tool Configuration
     }
 
     stages {
