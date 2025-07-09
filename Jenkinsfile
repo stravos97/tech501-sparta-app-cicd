@@ -39,12 +39,14 @@ pipeline {
                         // Give the database a moment to start
                         sh 'sleep 10'
 
-                        // 2. Use docker.withRun to execute steps inside a temporary Node.js container
-                        //    This container is automatically linked to the mongo container.
+                        // CORRECTED PART:
+                        // Use docker.withRun to execute steps INSIDE a temporary Node.js container.
+                        // This container is automatically linked to the mongo container.
                         docker.image('node:20-slim').withRun(
                             "-e DB_HOST=mongodb://mongo:27017/posts --link ${mongoContainerID}:mongo"
                         ) {
-                            // These commands run INSIDE the node:20-slim container
+                            // This command now runs INSIDE the node:20-slim container
+                            // where DB_HOST is correctly set.
                             sh 'npm test'
                         }
                     } finally {
