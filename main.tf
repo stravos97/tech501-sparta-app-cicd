@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/null"
       version = "~> 3.0"
     }
+    tls = {
+      source = "hashicorp/tls"
+      version = "~> 4.0"
+    }
   }
 }
 
@@ -286,10 +290,6 @@ resource "google_compute_instance" "app_instance" {
     }
   }
 
-  metadata = {
-    ssh-keys = "adminuser:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDTA4s/RZE14sFhpZ1ppaGSfu5PNoMxUmfpDbVQo4ym72saS3E0sk5mGmqtc7577MvU66Zb0vIKp+6qZRL4nU0xbPehyDGx51J0l0RW75wgCl3C9pxGfDYR9SOOCpuAIe8njuuyCGx2E0mZvhiFFHn8BxQ8TgLfCfNqFqMY3uuAp9bVDRTIZ7hWJkNPZLlA/78YC5DUQIn1qxNKPoLaUkGDUT2tgtis3UNw4lg43jCVRimgx+wgSYgDOtau2Bd5t5yhD6T0Y1AFY/eXOTHv5zoFGEHytiqgzZZ6tzV03xjm5pzRQbMUVtlaj50HyuLl46a6oQ/mjRcDZFBl2wLL8WgoLlHAS68xeYbDBRvqd36Pmi+oOu6CDeDTJV+v9QNYAJ0Mc9VuAdLPOh+fZ49I89L2q2PwXZGk5hAfGglH0pcy24VBpEPK1RpacE0LXWrpBCUZVwz6VhtHnjKMb5o0VazUXn1Ye/s03sjQ5pgWO3kIdU9qD380opl7HJ8GWkWeEZxNf6kG/h49WyKpFbcp9A5pPlSWkekG3HAFWrONLAJqIwp5tR1x9pxwzYlvb/KydO9NjE0QXpYuacuq4RJ1JbfWNSeNG6E93uqfbrj/V8+743/9a0iZD0Ly5gYYhy/hUfD+PWNbL6iT+n8LRkgOaRntEZBkANawNC2Z5IqiOHY1dQ== haashimalvi@Haashim-Laptop.local"
-  }
-
   service_account {
     email  = "155517448706-compute@developer.gserviceaccount.com"
     scopes = ["https://www.googleapis.com/auth/cloud-platform"]
@@ -329,10 +329,6 @@ resource "google_compute_instance" "db_instance" {
     subnetwork = google_compute_subnetwork.private_subnet.self_link
   }
 
-  metadata = {
-    ssh-keys = "adminuser:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDTA4s/RZE14sFhpZ1ppaGSfu5PNoMxUmfpDbVQo4ym72saS3E0sk5mGmqtc7577MvU66Zb0vIKp+6qZRL4nU0xbPehyDGx51J0l0RW75wgCl3C9pxGfDYR9SOOCpuAIe8njuuyCGx2E0mZvhiFFHn8BxQ8TgLfCfNqFqMY3uuAp9bVDRTIZ7hWJkNPZLlA/78YC5DUQIn1qxNKPoLaUkGDUT2tgtis3UNw4lg43jCVRimgx+wgSYgDOtau2Bd5t5yhD6T0Y1AFY/eXOTHv5zoFGEHytiqgzZZ6tzV03xjm5pzRQbMUVtlaj50HyuLl46a6oQ/mjRcDZFBl2wLL8WgoLlHAS68xeYbDBRvqd36Pmi+oOu6CDeDTJV+v9QNYAJ0Mc9VuAdLPOh+fZ49I89L2q2PwXZGk5hAfGglH0pcy24VBpEPK1RpacE0LXWrpBCUZVwz6VhtHnjKMb5o0VazUXn1Ye/s03sjQ5pgWO3kIdU9qD380opl7HJ8GWkWeEZxNf6kG/h49WyKpFbcp9A5pPlSWkekG3HAFWrONLAJqIwp5tR1x9pxwzYlvb/KydO9NjE0QXpYuacuq4RJ1JbfWNSeNG6E93uqfbrj/V8+743/9a0iZD0Ly5gYYhy/hUfD+PWNbL6iT+n8LRkgOaRntEZBkANawNC2Z5IqiOHY1dQ== haashimalvi@Haashim-Laptop.local"
-  }
-
   service_account {
     email  = "155517448706-compute@developer.gserviceaccount.com"
     scopes = ["https://www.googleapis.com/auth/cloud-platform"]
@@ -354,36 +350,68 @@ resource "google_compute_instance" "db_instance" {
   }
 }
 
-# Null resource to handle Ansible provisioning after VMs are created
-resource "null_resource" "ansible_provisioning" {
-  # This resource will be recreated if any of the instances change
-  triggers = {
-    app_instance_id = google_compute_instance.app_instance.id
-    db_instance_id  = google_compute_instance.db_instance.id
-  }
-
-  # Wait for instances to be ready
-  provisioner "local-exec" {
-    command = "echo 'Waiting for instances to be ready...' && sleep 90"
-  }
-
-  # Generate Ansible inventory
-  provisioner "local-exec" {
-    command = "./scripts/generate-inventory.sh ${google_compute_instance.app_instance.network_interface[0].access_config[0].nat_ip} ${google_compute_instance.app_instance.network_interface[0].network_ip} ${google_compute_instance.db_instance.network_interface[0].network_ip} ${google_compute_instance.app_instance.name} ${google_compute_instance.db_instance.name}"
-  }
-
-  # Wait a bit more for SSH to be ready
-  provisioner "local-exec" {
-    command = "echo 'Waiting for SSH to be ready...' && sleep 60"
-  }
-
-  # Run Ansible playbook with retry logic
-  provisioner "local-exec" {
-    command = "./scripts/run-ansible.sh"
-  }
-
-  depends_on = [
-    google_compute_instance.app_instance,
-    google_compute_instance.db_instance
-  ]
+locals {
+  private_key_exists = fileexists("gcp-sparta-ssh-key")
 }
+
+resource "tls_private_key" "ssh" {
+  count     = local.private_key_exists ? 0 : 1
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+locals {
+  existing_private_key_pem = local.private_key_exists ? file("gcp-sparta-ssh-key") : null
+}
+
+resource "local_file" "ssh_private_key" {
+  count           = local.private_key_exists ? 0 : 1
+  content         = tls_private_key.ssh[0].private_key_pem
+  filename        = "gcp-sparta-ssh-key"
+  file_permission = "0600"
+}
+
+data "external" "existing_ssh_public_key" {
+  count   = local.private_key_exists ? 1 : 0
+  program = ["sh", "-c", "ssh-keygen -y -f gcp-sparta-ssh-key | tr -d '\n' | jq -R '{\"public_key\": .}'"]
+}
+
+resource "google_compute_project_metadata" "ssh_key" {
+  metadata = {
+    ssh-keys = "adminuser:${local.private_key_exists ? data.external.existing_ssh_public_key[0].result.public_key : tls_private_key.ssh[0].public_key_openssh}"
+  }
+}
+
+
+# resource "null_resource" "ansible_provisioning" {
+#   # This resource will be recreated if any of the instances change
+#   triggers = {
+#     app_instance_id = google_compute_instance.app_instance.id
+#     db_instance_id  = google_compute_instance.db_instance.id
+#   }
+
+#   # Wait for instances to be ready
+#   provisioner "local-exec" {
+#     command = "echo 'Waiting for instances to be ready...' && sleep 90"
+#   }
+
+#   # Generate Ansible inventory
+#   provisioner "local-exec" {
+#     command = "./scripts/generate-inventory.sh ${google_compute_instance.app_instance.network_interface[0].access_config[0].nat_ip} ${google_compute_instance.app_instance.network_interface[0].network_ip} ${google_compute_instance.db_instance.network_interface[0].network_ip} ${google_compute_instance.app_instance.name} ${google_compute_instance.db_instance.name}"
+#   }
+
+#   # Wait a bit more for SSH to be ready
+#   provisioner "local-exec" {
+#     command = "echo 'Waiting for SSH to be ready...' && sleep 60"
+#   }
+
+#   # Run Ansible playbook with retry logic
+#   provisioner "local-exec" {
+#     command = "./scripts/run-ansible.sh"
+#   }
+
+#   depends_on = [
+#     google_compute_instance.app_instance,
+#     google_compute_instance.db_instance
+#   ]
+# }
