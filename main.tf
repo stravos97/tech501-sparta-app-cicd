@@ -9,7 +9,7 @@ terraform {
       version = "~> 3.0"
     }
     tls = {
-      source = "hashicorp/tls"
+      source  = "hashicorp/tls"
       version = "~> 4.0"
     }
   }
@@ -41,20 +41,20 @@ resource "google_compute_subnetwork" "public_subnet" {
 }
 
 resource "google_compute_subnetwork" "private_subnet" {
-  name                    = "private-subnet"
-  ip_cidr_range           = "10.0.2.0/24"
-  region                  = "us-central1"
-  network                 = google_compute_network.two_tier_vpc.self_link
+  name                     = "private-subnet"
+  ip_cidr_range            = "10.0.2.0/24"
+  region                   = "us-central1"
+  network                  = google_compute_network.two_tier_vpc.self_link
   private_ip_google_access = true
 }
 
 resource "google_compute_firewall" "allow_app_port_3000" {
-  name        = "allow-app-port-3000"
-  network     = google_compute_network.two_tier_vpc.self_link
-  direction   = "INGRESS"
-  priority    = 1000
+  name          = "allow-app-port-3000"
+  network       = google_compute_network.two_tier_vpc.self_link
+  direction     = "INGRESS"
+  priority      = 1000
   source_ranges = ["0.0.0.0/0"]
-  target_tags = ["app-server"]
+  target_tags   = ["app-server"]
   allow {
     protocol = "tcp"
     ports    = ["3000"]
@@ -76,12 +76,12 @@ resource "google_compute_firewall" "allow_db_access" {
 }
 
 resource "google_compute_firewall" "allow_http" {
-  name        = "allow-http"
-  network     = google_compute_network.two_tier_vpc.self_link
-  direction   = "INGRESS"
-  priority    = 1000
+  name          = "allow-http"
+  network       = google_compute_network.two_tier_vpc.self_link
+  direction     = "INGRESS"
+  priority      = 1000
   source_ranges = ["0.0.0.0/0"]
-  target_tags = ["web-server"]
+  target_tags   = ["web-server"]
   allow {
     protocol = "tcp"
     ports    = ["80"]
@@ -89,10 +89,10 @@ resource "google_compute_firewall" "allow_http" {
 }
 
 resource "google_compute_firewall" "allow_iap_ssh" {
-  name        = "allow-iap-ssh"
-  network     = google_compute_network.two_tier_vpc.self_link
-  direction   = "INGRESS"
-  priority    = 1000
+  name          = "allow-iap-ssh"
+  network       = google_compute_network.two_tier_vpc.self_link
+  direction     = "INGRESS"
+  priority      = 1000
   source_ranges = ["35.235.240.0/20"]
   allow {
     protocol = "tcp"
@@ -114,10 +114,10 @@ resource "google_compute_firewall" "allow_mongo_db" {
 }
 
 resource "google_compute_firewall" "allow_ssh_external_insecure" {
-  name        = "allow-ssh-external-insecure"
-  network     = google_compute_network.default_network.self_link
-  direction   = "INGRESS"
-  priority    = 1000
+  name          = "allow-ssh-external-insecure"
+  network       = google_compute_network.default_network.self_link
+  direction     = "INGRESS"
+  priority      = 1000
   source_ranges = ["0.0.0.0/0"]
   allow {
     protocol = "tcp"
@@ -126,10 +126,10 @@ resource "google_compute_firewall" "allow_ssh_external_insecure" {
 }
 
 resource "google_compute_firewall" "allow_ssh_iap" {
-  name        = "allow-ssh-iap"
-  network     = google_compute_network.two_tier_vpc.self_link
-  direction   = "INGRESS"
-  priority    = 1000
+  name          = "allow-ssh-iap"
+  network       = google_compute_network.two_tier_vpc.self_link
+  direction     = "INGRESS"
+  priority      = 1000
   source_ranges = ["35.235.240.0/20"]
   allow {
     protocol = "tcp"
@@ -138,12 +138,12 @@ resource "google_compute_firewall" "allow_ssh_iap" {
 }
 
 resource "google_compute_firewall" "allow_ssh_to_web_server" {
-  name        = "allow-ssh-to-web-server"
-  network     = google_compute_network.two_tier_vpc.self_link
-  direction   = "INGRESS"
-  priority    = 1000
+  name          = "allow-ssh-to-web-server"
+  network       = google_compute_network.two_tier_vpc.self_link
+  direction     = "INGRESS"
+  priority      = 1000
   source_ranges = ["0.0.0.0/0"]
-  target_tags = ["web-server"]
+  target_tags   = ["web-server"]
   allow {
     protocol = "tcp"
     ports    = ["22"]
@@ -152,10 +152,10 @@ resource "google_compute_firewall" "allow_ssh_to_web_server" {
 }
 
 resource "google_compute_firewall" "default_allow_icmp" {
-  name        = "default-allow-icmp"
-  network     = google_compute_network.default_network.self_link
-  direction   = "INGRESS"
-  priority    = 65534
+  name          = "default-allow-icmp"
+  network       = google_compute_network.default_network.self_link
+  direction     = "INGRESS"
+  priority      = 65534
   source_ranges = ["0.0.0.0/0"]
   allow {
     protocol = "icmp"
@@ -164,10 +164,10 @@ resource "google_compute_firewall" "default_allow_icmp" {
 }
 
 resource "google_compute_firewall" "default_allow_internal" {
-  name        = "default-allow-internal"
-  network     = google_compute_network.default_network.self_link
-  direction   = "INGRESS"
-  priority    = 65534
+  name          = "default-allow-internal"
+  network       = google_compute_network.default_network.self_link
+  direction     = "INGRESS"
+  priority      = 65534
   source_ranges = ["10.128.0.0/9"]
   allow {
     protocol = "tcp"
@@ -184,10 +184,10 @@ resource "google_compute_firewall" "default_allow_internal" {
 }
 
 resource "google_compute_firewall" "default_allow_rdp" {
-  name        = "default-allow-rdp"
-  network     = google_compute_network.default_network.self_link
-  direction   = "INGRESS"
-  priority    = 65534
+  name          = "default-allow-rdp"
+  network       = google_compute_network.default_network.self_link
+  direction     = "INGRESS"
+  priority      = 65534
   source_ranges = ["0.0.0.0/0"]
   allow {
     protocol = "tcp"
@@ -197,10 +197,10 @@ resource "google_compute_firewall" "default_allow_rdp" {
 }
 
 resource "google_compute_firewall" "default_allow_ssh" {
-  name        = "default-allow-ssh"
-  network     = google_compute_network.default_network.self_link
-  direction   = "INGRESS"
-  priority    = 65534
+  name          = "default-allow-ssh"
+  network       = google_compute_network.default_network.self_link
+  direction     = "INGRESS"
+  priority      = 65534
   source_ranges = ["0.0.0.0/0"]
   allow {
     protocol = "tcp"
@@ -210,12 +210,12 @@ resource "google_compute_firewall" "default_allow_ssh" {
 }
 
 resource "google_compute_firewall" "two_tier_vpc_allow_http" {
-  name        = "two-tier-vpc-allow-http"
-  network     = google_compute_network.two_tier_vpc.self_link
-  direction   = "INGRESS"
-  priority    = 1000
+  name          = "two-tier-vpc-allow-http"
+  network       = google_compute_network.two_tier_vpc.self_link
+  direction     = "INGRESS"
+  priority      = 1000
   source_ranges = ["0.0.0.0/0"]
-  target_tags = ["http-server"]
+  target_tags   = ["http-server"]
   allow {
     protocol = "tcp"
     ports    = ["80"]
@@ -223,12 +223,12 @@ resource "google_compute_firewall" "two_tier_vpc_allow_http" {
 }
 
 resource "google_compute_firewall" "two_tier_vpc_allow_https" {
-  name        = "two-tier-vpc-allow-https"
-  network     = google_compute_network.two_tier_vpc.self_link
-  direction   = "INGRESS"
-  priority    = 1000
+  name          = "two-tier-vpc-allow-https"
+  network       = google_compute_network.two_tier_vpc.self_link
+  direction     = "INGRESS"
+  priority      = 1000
   source_ranges = ["0.0.0.0/0"]
-  target_tags = ["https-server"]
+  target_tags   = ["https-server"]
   allow {
     protocol = "tcp"
     ports    = ["443"]
@@ -236,11 +236,11 @@ resource "google_compute_firewall" "two_tier_vpc_allow_https" {
 }
 
 resource "google_compute_firewall" "allow_db_egress_http_https" {
-  name        = "allow-db-egress-http-https"
-  network     = google_compute_network.two_tier_vpc.self_link
-  direction   = "EGRESS"
-  priority    = 1000
-  target_tags = ["db-server"]
+  name               = "allow-db-egress-http-https"
+  network            = google_compute_network.two_tier_vpc.self_link
+  direction          = "EGRESS"
+  priority           = 1000
+  target_tags        = ["db-server"]
   destination_ranges = ["0.0.0.0/0"]
   allow {
     protocol = "tcp"
@@ -256,10 +256,10 @@ resource "google_compute_router" "nat_router" {
 }
 
 resource "google_compute_router_nat" "nat_config" {
-  name                   = "nat-config"
-  router                 = google_compute_router.nat_router.name
-  region                 = google_compute_router.nat_router.region
-  nat_ip_allocate_option = "AUTO_ONLY"
+  name                               = "nat-config"
+  router                             = google_compute_router.nat_router.name
+  region                             = google_compute_router.nat_router.region
+  nat_ip_allocate_option             = "AUTO_ONLY"
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
 
   log_config {
@@ -269,10 +269,10 @@ resource "google_compute_router_nat" "nat_config" {
 }
 
 resource "google_compute_instance" "app_instance" {
-  name         = "app-instance"
-  machine_type = "e2-micro"
-  zone         = "us-central1-a"
-  project      = "gcp-sparta"
+  name           = "app-instance"
+  machine_type   = "e2-micro"
+  zone           = "us-central1-a"
+  project        = "gcp-sparta"
   can_ip_forward = true
 
   boot_disk {
@@ -311,6 +311,10 @@ resource "google_compute_instance" "app_instance" {
   }
 }
 
+resource "google_compute_address" "db_static_ip" {
+  name = "db-static-ip"
+}
+
 resource "google_compute_instance" "db_instance" {
   name         = "db-instance"
   machine_type = "e2-micro"
@@ -326,7 +330,10 @@ resource "google_compute_instance" "db_instance" {
 
   network_interface {
     network    = google_compute_network.two_tier_vpc.self_link
-    subnetwork = google_compute_subnetwork.private_subnet.self_link
+    subnetwork = google_compute_subnetwork.public_subnet.self_link
+    access_config {
+      nat_ip = google_compute_address.db_static_ip.address
+    }
   }
 
   service_account {
@@ -348,6 +355,7 @@ resource "google_compute_instance" "db_instance" {
     enable_secure_boot          = false
     enable_vtpm                 = true
   }
+  allow_stopping_for_update = true
 }
 
 locals {
