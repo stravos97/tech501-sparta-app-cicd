@@ -8,14 +8,14 @@ set -e
 
 echo "Generating Ansible inventory from Terraform outputs..."
 
-# Get Terraform outputs
-APP_EXTERNAL_IP=$(terraform output -raw app_instance_external_ip)
-APP_INTERNAL_IP=$(terraform output -raw app_instance_internal_ip)
-DB_INTERNAL_IP=$(terraform output -raw db_instance_internal_ip)
-APP_NAME=$(terraform output -raw app_instance_name)
-DB_NAME=$(terraform output -raw db_instance_name)
+# Get IPs from command-line arguments
+APP_EXTERNAL_IP=$1
+APP_INTERNAL_IP=$2
+DB_INTERNAL_IP=$3
+APP_NAME=$4
+DB_NAME=$5
 
-echo "Retrieved IPs:"
+echo "Retrieved IPs from arguments:"
 echo "  App External IP: $APP_EXTERNAL_IP"
 echo "  App Internal IP: $APP_INTERNAL_IP"
 echo "  DB Internal IP: $DB_INTERNAL_IP"

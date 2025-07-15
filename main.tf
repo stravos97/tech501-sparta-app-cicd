@@ -37,10 +37,11 @@ resource "google_compute_subnetwork" "public_subnet" {
 }
 
 resource "google_compute_subnetwork" "private_subnet" {
-  name          = "private-subnet"
-  ip_cidr_range = "10.0.2.0/24"
-  region        = "us-central1"
-  network       = google_compute_network.two_tier_vpc.self_link
+  name                    = "private-subnet"
+  ip_cidr_range           = "10.0.2.0/24"
+  region                  = "us-central1"
+  network                 = google_compute_network.two_tier_vpc.self_link
+  private_ip_google_access = true
 }
 
 resource "google_compute_firewall" "allow_app_port_3000" {
@@ -230,6 +231,39 @@ resource "google_compute_firewall" "two_tier_vpc_allow_https" {
   }
 }
 
+resource "google_compute_firewall" "allow_db_egress_http_https" {
+  name        = "allow-db-egress-http-https"
+  network     = google_compute_network.two_tier_vpc.self_link
+  direction   = "EGRESS"
+  priority    = 1000
+  target_tags = ["db-server"]
+  destination_ranges = ["0.0.0.0/0"]
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "443"]
+  }
+  description = "Allows egress HTTP/HTTPS traffic from db-server instances to the internet."
+}
+
+resource "google_compute_router" "nat_router" {
+  name    = "nat-router"
+  region  = "us-central1"
+  network = google_compute_network.two_tier_vpc.self_link
+}
+
+resource "google_compute_router_nat" "nat_config" {
+  name                   = "nat-config"
+  router                 = google_compute_router.nat_router.name
+  region                 = google_compute_router.nat_router.region
+  nat_ip_allocate_option = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+
+  log_config {
+    enable = true
+    filter = "ERRORS_ONLY"
+  }
+}
+
 resource "google_compute_instance" "app_instance" {
   name         = "app-instance"
   machine_type = "e2-micro"
@@ -330,17 +364,17 @@ resource "null_resource" "ansible_provisioning" {
 
   # Wait for instances to be ready
   provisioner "local-exec" {
-    command = "echo 'Waiting for instances to be ready...' && sleep 60"
+    command = "echo 'Waiting for instances to be ready...' && sleep 90"
   }
 
   # Generate Ansible inventory
   provisioner "local-exec" {
-    command = "./scripts/generate-inventory.sh"
+    command = "./scripts/generate-inventory.sh ${google_compute_instance.app_instance.network_interface[0].access_config[0].nat_ip} ${google_compute_instance.app_instance.network_interface[0].network_ip} ${google_compute_instance.db_instance.network_interface[0].network_ip} ${google_compute_instance.app_instance.name} ${google_compute_instance.db_instance.name}"
   }
 
   # Wait a bit more for SSH to be ready
   provisioner "local-exec" {
-    command = "echo 'Waiting for SSH to be ready...' && sleep 30"
+    command = "echo 'Waiting for SSH to be ready...' && sleep 60"
   }
 
   # Run Ansible playbook with retry logic

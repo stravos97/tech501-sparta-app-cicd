@@ -11,3 +11,6 @@ node_modules
 .vagrant
 package-lock.json
 *.log
+.gemini/settings.json
+settings.json
+CLAUDE.md

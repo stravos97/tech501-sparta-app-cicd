@@ -25,7 +25,7 @@ run_ansible() {
     cd ../tech501-ansible
     
     # Run the playbook
-    if ansible-playbook -i inventory.yml playbooks/prov-app-all.yml -v; then
+    if ansible-playbook -i inventory.yml playbooks/prov-app-all.yml -vvv; then
         echo "✅ Ansible playbook executed successfully on attempt $attempt"
         return 0
     else
