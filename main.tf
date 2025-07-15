@@ -151,6 +151,19 @@ resource "google_compute_firewall" "allow_ssh_to_web_server" {
   description = "Allow SSH from any IP to instances with the web-server tag on the two-tier-vpc network."
 }
 
+resource "google_compute_firewall" "allow_ssh_two_tier" {
+  name          = "allow-ssh-two-tier"
+  network       = google_compute_network.two_tier_vpc.self_link
+  direction     = "INGRESS"
+  priority      = 1000
+  source_ranges = ["0.0.0.0/0"]
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+  description = "Allow SSH from any IP on the two-tier-vpc network."
+}
+
 resource "google_compute_firewall" "default_allow_icmp" {
   name          = "default-allow-icmp"
   network       = google_compute_network.default_network.self_link
@@ -277,7 +290,7 @@ resource "google_compute_instance" "app_instance" {
 
   boot_disk {
     initialize_params {
-      image = "debian-cloud/debian-11"
+      image = "ubuntu-os-cloud/ubuntu-2204-lts"
       size  = 10
     }
   }
@@ -323,7 +336,7 @@ resource "google_compute_instance" "db_instance" {
 
   boot_disk {
     initialize_params {
-      image = "debian-cloud/debian-11"
+      image = "ubuntu-os-cloud/ubuntu-2204-lts"
       size  = 10
     }
   }
@@ -358,35 +371,20 @@ resource "google_compute_instance" "db_instance" {
   allow_stopping_for_update = true
 }
 
-locals {
-  private_key_exists = fileexists("gcp-sparta-ssh-key")
-}
-
 resource "tls_private_key" "ssh" {
-  count     = local.private_key_exists ? 0 : 1
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-locals {
-  existing_private_key_pem = local.private_key_exists ? file("gcp-sparta-ssh-key") : null
-}
-
 resource "local_file" "ssh_private_key" {
-  count           = local.private_key_exists ? 0 : 1
-  content         = tls_private_key.ssh[0].private_key_pem
+  content         = tls_private_key.ssh.private_key_pem
   filename        = "gcp-sparta-ssh-key"
   file_permission = "0600"
 }
 
-data "external" "existing_ssh_public_key" {
-  count   = local.private_key_exists ? 1 : 0
-  program = ["sh", "-c", "ssh-keygen -y -f gcp-sparta-ssh-key | tr -d '\n' | jq -R '{\"public_key\": .}'"]
-}
-
 resource "google_compute_project_metadata" "ssh_key" {
   metadata = {
-    ssh-keys = "adminuser:${local.private_key_exists ? data.external.existing_ssh_public_key[0].result.public_key : tls_private_key.ssh[0].public_key_openssh}"
+    ssh-keys = "adminuser:${tls_private_key.ssh.public_key_openssh}"
   }
 }
 
