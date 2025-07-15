@@ -11,3 +11,18 @@ node_modules
 .vagrant
 package-lock.json
 *.log
+.gemini/settings.json
+settings.json
+CLAUDE.md
+gcp-sparta-ssh-key
+# Terraform specific ignores
+*.tfstate
+*.tfstate.backup
+*.tfplan
+crash.log
+override.tf
+override.tf.json
+*.override.tf
+*.override.tf.json
+.terraformrc
+terraform.rc

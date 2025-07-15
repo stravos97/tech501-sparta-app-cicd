@@ -1,0 +1,1250 @@
+---
+canIpForward: true
+cpuPlatform: Intel Broadwell
+creationTimestamp: '2025-07-07T08:06:54.862-07:00'
+deletionProtection: false
+disks:
+- architecture: X86_64
+  autoDelete: true
+  boot: true
+  deviceName: app-instance
+  diskSizeGb: '10'
+  guestOsFeatures:
+  - type: UEFI_COMPATIBLE
+  - type: VIRTIO_SCSI_MULTIQUEUE
+  - type: GVNIC
+  index: 0
+  interface: SCSI
+  kind: compute#attachedDisk
+  licenses:
+  - https://www.googleapis.com/compute/v1/projects/debian-cloud/global/licenses/debian-11-bullseye
+  mode: READ_WRITE
+  source: https://www.googleapis.com/compute/v1/projects/gcp-sparta/zones/us-central1-a/disks/app-instance
+  type: PERSISTENT
+fingerprint: _84kmK6begQ=
+id: '3319433248069016673'
+kind: compute#instance
+labelFingerprint: pzBpbdzjubE=
+labels:
+  goog-ops-agent-policy: v2-x86-template-1-4-0
+lastStartTimestamp: '2025-07-09T06:59:47.550-07:00'
+lastStopTimestamp: '2025-07-07T08:25:56.829-07:00'
+machineType: https://www.googleapis.com/compute/v1/projects/gcp-sparta/zones/us-central1-a/machineTypes/e2-micro
+metadata:
+  fingerprint: 0wEEMOoxekg=
+  items:
+  - key: startup-script
+    value: |-
+      #!/bin/bash
+
+      # Update system packages
+
+      sudo apt-get update -y
+
+      sudo apt-get upgrade -y
+
+      # Install required software
+
+      sudo apt-get install -y nginx nodejs npm git
+
+      sudo npm install -g pm2
+
+      # Clone the application repository
+
+      git clone https://github.com/Haashimc123/tech501-sparta-app.git /home/adminuser/tech501-sparta-app
+
+      cd /home/adminuser/tech501-sparta-app
+
+      # Install application dependencies
+
+      npm install
+
+      # Configure NGINX as a reverse proxy
+
+      sudo bash -c 'cat > /etc/nginx/sites-available/default << EOF
+
+      server {
+
+          listen 80;
+
+          server_name _;
+
+          
+
+          location / {
+
+              proxy_pass http://127.0.0.1:3000;
+
+              proxy_http_version 1.1;
+
+              proxy_set_header Upgrade $http_upgrade;
+
+              proxy_set_header Connection "upgrade";
+
+              proxy_set_header Host $host;
+
+              proxy_cache_bypass $http_upgrade;
+
+          }
+
+      }
+
+      EOF'
+
+      # Test and reload NGINX configuration
+
+      sudo nginx -t
+
+      sudo systemctl reload nginx
+
+      # Set environment variables
+
+      export DB_HOST="mongodb://db-instance:27017/yourdatabase"
+
+      echo 'export DB_HOST="mongodb://db-instance:27017/yourdatabase"' >> /home/adminuser/.bashrc
+
+      # Start the application with PM2
+
+      pm2 start app.js
+
+      # Configure PM2 to start on boot
+
+      pm2 startup systemd
+
+      sudo env PATH=/Library/Frameworks/Python.framework/Versions/3.12/bin:/Users/haashimalvi/scripts:/Library/Frameworks/Python.framework/Versions/3.13/bin:/Library/Frameworks/Python.framework/Versions/3.12/bin:/opt/local/bin:/opt/local/sbin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin://Applications/Topaz Photo AI.app/Contents/Resources/bin:/Library/TeX/texbin:/usr/bin pm2 startup systemd -u adminuser --hp /home/adminuser
+
+      pm2 save
+  - key: ssh-keys
+    value: |-
+      adminuser:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDTA4s/RZE14sFhpZ1ppaGSfu5PNoMxUmfpDbVQo4ym72saS3E0sk5mGmqtc7577MvU66Zb0vIKp+6qZRL4nU0xbPehyDGx51J0l0RW75wgCl3C9pxGfDYR9SOOCpuAIe8njuuyCGx2E0mZvhiFFHn8BxQ8TgLfCfNqFqMY3uuAp9bVDRTIZ7hWJkNPZLlA/78YC5DUQIn1qxNKPoLaUkGDUT2tgtis3UNw4lg43jCVRimgx+wgSYgDOtau2Bd5t5yhD6T0Y1AFY/eXOTHv5zoFGEHytiqgzZZ6tzV03xjm5pzRQbMUVtlaj50HyuLl46a6oQ/mjRcDZFBl2wLL8WgoLlHAS68xeYbDBRvqd36Pmi+oOu6CDeDTJV+v9QNYAJ0Mc9VuAdLPOh+fZ49I89L2q2PwXZGk5hAfGglH0pcy24VBpEPK1RpacE0LXWrpBCUZVwz6VhtHnjKMb5o0VazUXn1Ye/s03sjQ5pgWO3kIdU9qD380opl7HJ8GWkWeEZxNf6kG/h49WyKpFbcp9A5pPlSWkekG3HAFWrONLAJqIwp5tR1x9pxwzYlvb/KydO9NjE0QXpYuacuq4RJ1JbfWNSeNG6E93uqfbrj/V8+743/9a0iZD0Ly5gYYhy/hUfD+PWNbL6iT+n8LRkgOaRntEZBkANawNC2Z5IqiOHY1dQ== haashimalvi@Haashim-Laptop.local
+      haashim97:ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBDoWwsahwut1IXEmAxO+xMG1J3p2t/PlnSDeI+vl6PWIA+J5IpTauVDNOLp7a5N7zOxtpTQn5yjcdqSLIiB7148= google-ssh {"userName":"haashim97@gmail.com","expireOn":"2025-07-07T09:48:06+0000"}
+      haashim97:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCDKdN3bdgaoiIS75Z8qf8hJz8zijF6Jes77pZS3l+EOtABF7I5srSJrhOQl2h2sGItxFBbUKVMVLI8i8SdT9ERrVgNycPriXqOz3/wYe+nrDHbUzGrAnVk3i+DN3baI+OaPX397/HJjVMnNW9oVOhlStnw8E2RT99JuElGP0b06j7UdzTPHa9hi6VBc3czxSFYw/SoLqOkVk3eF3UsU2CU/oC30rem+YN6L6zFZlUsqPXju3rqulwDub6CHq6g6WtJbnqZhd5upn8M1wJyav+JDaH0kX+gL0FE5RDhg1EdAlHYagbGrzjyt9mdZg6fKZnHlBs3CrP5nh+UjdkMj/pL google-ssh {"userName":"haashim97@gmail.com","expireOn":"2025-07-07T09:48:11+0000"}
+  - key: enable-osconfig
+    value: 'TRUE'
+  kind: compute#metadata
+name: app-instance
+networkInterfaces:
+- accessConfigs:
+  - kind: compute#accessConfig
+    name: external-nat
+    natIP: 34.58.223.133
+    networkTier: PREMIUM
+    type: ONE_TO_ONE_NAT
+  fingerprint: 9AUIyqh4l1U=
+  kind: compute#networkInterface
+  name: nic0
+  network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/two-tier-vpc
+  networkIP: 10.0.1.5
+  stackType: IPV4_ONLY
+  subnetwork: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-central1/subnetworks/public-subnet
+satisfiesPzi: true
+scheduling:
+  automaticRestart: true
+  onHostMaintenance: MIGRATE
+  preemptible: false
+  provisioningModel: STANDARD
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/zones/us-central1-a/instances/app-instance
+serviceAccounts:
+- email: 155517448706-compute@developer.gserviceaccount.com
+  scopes:
+  - https://www.googleapis.com/auth/cloud-platform
+shieldedInstanceConfig:
+  enableIntegrityMonitoring: true
+  enableSecureBoot: false
+  enableVtpm: true
+shieldedInstanceIntegrityPolicy:
+  updateAutoLearnPolicy: true
+sourceMachineImage: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/machineImages/app-instance-image
+startRestricted: false
+status: RUNNING
+tags:
+  fingerprint: Hhnd_s0tbQc=
+  items:
+  - app-server
+  - web-server
+zone: https://www.googleapis.com/compute/v1/projects/gcp-sparta/zones/us-central1-a
+---
+canIpForward: false
+cpuPlatform: Intel Broadwell
+creationTimestamp: '2025-07-07T08:07:41.945-07:00'
+deletionProtection: false
+disks:
+- architecture: X86_64
+  autoDelete: true
+  boot: true
+  deviceName: db-instance
+  diskSizeGb: '10'
+  guestOsFeatures:
+  - type: UEFI_COMPATIBLE
+  - type: VIRTIO_SCSI_MULTIQUEUE
+  - type: GVNIC
+  index: 0
+  interface: SCSI
+  kind: compute#attachedDisk
+  licenses:
+  - https://www.googleapis.com/compute/v1/projects/debian-cloud/global/licenses/debian-11-bullseye
+  mode: READ_WRITE
+  source: https://www.googleapis.com/compute/v1/projects/gcp-sparta/zones/us-central1-a/disks/db-instance
+  type: PERSISTENT
+fingerprint: rpy_0utJJuY=
+id: '5275101144073788498'
+kind: compute#instance
+labelFingerprint: 42WmSpB8rSM=
+lastStartTimestamp: '2025-07-09T07:00:06.239-07:00'
+lastStopTimestamp: '2025-07-07T08:25:52.640-07:00'
+machineType: https://www.googleapis.com/compute/v1/projects/gcp-sparta/zones/us-central1-a/machineTypes/e2-micro
+metadata:
+  fingerprint: 4DpKPO3Wgs0=
+  items:
+  - key: ssh-keys
+    value: adminuser:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDTA4s/RZE14sFhpZ1ppaGSfu5PNoMxUmfpDbVQo4ym72saS3E0sk5mGmqtc7577MvU66Zb0vIKp+6qZRL4nU0xbPehyDGx51J0l0RW75wgCl3C9pxGfDYR9SOOCpuAIe8njuuyCGx2E0mZvhiFFHn8BxQ8TgLfCfNqFqMY3uuAp9bVDRTIZ7hWJkNPZLlA/78YC5DUQIn1qxNKPoLaUkGDUT2tgtis3UNw4lg43jCVRimgx+wgSYgDOtau2Bd5t5yhD6T0Y1AFY/eXOTHv5zoFGEHytiqgzZZ6tzV03xjm5pzRQbMUVtlaj50HyuLl46a6oQ/mjRcDZFBl2wLL8WgoLlHAS68xeYbDBRvqd36Pmi+oOu6CDeDTJV+v9QNYAJ0Mc9VuAdLPOh+fZ49I89L2q2PwXZGk5hAfGglH0pcy24VBpEPK1RpacE0LXWrpBCUZVwz6VhtHnjKMb5o0VazUXn1Ye/s03sjQ5pgWO3kIdU9qD380opl7HJ8GWkWeEZxNf6kG/h49WyKpFbcp9A5pPlSWkekG3HAFWrONLAJqIwp5tR1x9pxwzYlvb/KydO9NjE0QXpYuacuq4RJ1JbfWNSeNG6E93uqfbrj/V8+743/9a0iZD0Ly5gYYhy/hUfD+PWNbL6iT+n8LRkgOaRntEZBkANawNC2Z5IqiOHY1dQ==
+      haashimalvi@Haashim-Laptop.local
+  - key: startup-script
+    value: sudo apt-get update -y && sudo apt-get install -y mongodb
+  kind: compute#metadata
+name: db-instance
+networkInterfaces:
+- fingerprint: ofy7Tw7H9gw=
+  kind: compute#networkInterface
+  name: nic0
+  network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/two-tier-vpc
+  networkIP: 10.0.2.5
+  stackType: IPV4_ONLY
+  subnetwork: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-central1/subnetworks/private-subnet
+satisfiesPzi: true
+scheduling:
+  automaticRestart: true
+  onHostMaintenance: MIGRATE
+  preemptible: false
+  provisioningModel: STANDARD
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/zones/us-central1-a/instances/db-instance
+serviceAccounts:
+- email: 155517448706-compute@developer.gserviceaccount.com
+  scopes:
+  - https://www.googleapis.com/auth/cloud-platform
+shieldedInstanceConfig:
+  enableIntegrityMonitoring: true
+  enableSecureBoot: false
+  enableVtpm: true
+shieldedInstanceIntegrityPolicy:
+  updateAutoLearnPolicy: true
+sourceMachineImage: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/machineImages/db-instance-image
+startRestricted: false
+status: RUNNING
+tags:
+  fingerprint: 6nVWpqigcVg=
+  items:
+  - db-server
+zone: https://www.googleapis.com/compute/v1/projects/gcp-sparta/zones/us-central1-a
+
+--- FIREWALL RULES ---
+
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '3000'
+creationTimestamp: '2025-07-07T07:11:30.499-07:00'
+description: Allows ingress TCP traffic on port 3000 to instances with the app-server
+  tag.
+direction: INGRESS
+disabled: false
+id: '1670980471506758525'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: allow-app-port-3000
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/two-tier-vpc
+priority: 1000
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/firewalls/allow-app-port-3000
+sourceRanges:
+- 0.0.0.0/0
+targetTags:
+- app-server
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '27017'
+creationTimestamp: '2025-07-07T02:29:08.386-07:00'
+description: ''
+direction: INGRESS
+disabled: false
+id: '3537862769208864139'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: allow-db-access
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/two-tier-vpc
+priority: 1000
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/firewalls/allow-db-access
+sourceTags:
+- web-server
+targetTags:
+- db-server
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '80'
+creationTimestamp: '2025-07-03T14:11:42.398-07:00'
+description: ''
+direction: INGRESS
+disabled: false
+id: '8057661789154528481'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: allow-http
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/two-tier-vpc
+priority: 1000
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/firewalls/allow-http
+sourceRanges:
+- 0.0.0.0/0
+targetTags:
+- web-server
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '22'
+creationTimestamp: '2025-07-07T02:28:53.357-07:00'
+description: ''
+direction: INGRESS
+disabled: false
+id: '6270672828119788986'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: allow-iap-ssh
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/two-tier-vpc
+priority: 1000
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/firewalls/allow-iap-ssh
+sourceRanges:
+- 35.235.240.0/20
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '27017'
+creationTimestamp: '2025-07-03T14:11:42.371-07:00'
+description: ''
+direction: INGRESS
+disabled: false
+id: '8316895763054152929'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: allow-mongo-db
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/two-tier-vpc
+priority: 1000
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/firewalls/allow-mongo-db
+sourceTags:
+- web-server
+targetTags:
+- db-server
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '22'
+creationTimestamp: '2025-07-03T15:02:17.433-07:00'
+description: ''
+direction: INGRESS
+disabled: false
+id: '4090599775731925766'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: allow-ssh-external-insecure
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+priority: 1000
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/firewalls/allow-ssh-external-insecure
+sourceRanges:
+- 0.0.0.0/0
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '22'
+creationTimestamp: '2025-07-03T14:11:42.489-07:00'
+description: ''
+direction: INGRESS
+disabled: false
+id: '3940665847567830241'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: allow-ssh-iap
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/two-tier-vpc
+priority: 1000
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/firewalls/allow-ssh-iap
+sourceRanges:
+- 35.235.240.0/20
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '22'
+creationTimestamp: '2025-07-07T03:03:30.091-07:00'
+description: Allow SSH from any IP to instances with the web-server tag on the two-tier-vpc
+  network.
+direction: INGRESS
+disabled: false
+id: '6011884457077122461'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: allow-ssh-to-web-server
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/two-tier-vpc
+priority: 1000
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/firewalls/allow-ssh-to-web-server
+sourceRanges:
+- 0.0.0.0/0
+targetTags:
+- web-server
+---
+allowed:
+- IPProtocol: icmp
+creationTimestamp: '2025-07-03T13:47:32.797-07:00'
+description: Allow ICMP from anywhere
+direction: INGRESS
+disabled: false
+id: '7592611341753078411'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: default-allow-icmp
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+priority: 65534
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/firewalls/default-allow-icmp
+sourceRanges:
+- 0.0.0.0/0
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - 0-65535
+- IPProtocol: udp
+  ports:
+  - 0-65535
+- IPProtocol: icmp
+creationTimestamp: '2025-07-03T13:47:32.562-07:00'
+description: Allow internal traffic on the default network
+direction: INGRESS
+disabled: false
+id: '3826399084471341707'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: default-allow-internal
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+priority: 65534
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/firewalls/default-allow-internal
+sourceRanges:
+- 10.128.0.0/9
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '3389'
+creationTimestamp: '2025-07-03T13:47:32.719-07:00'
+description: Allow RDP from anywhere
+direction: INGRESS
+disabled: false
+id: '904571857075393163'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: default-allow-rdp
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+priority: 65534
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/firewalls/default-allow-rdp
+sourceRanges:
+- 0.0.0.0/0
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '22'
+creationTimestamp: '2025-07-03T13:47:32.641-07:00'
+description: Allow SSH from anywhere
+direction: INGRESS
+disabled: false
+id: '4023536064723112587'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: default-allow-ssh
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+priority: 65534
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/firewalls/default-allow-ssh
+sourceRanges:
+- 0.0.0.0/0
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '80'
+creationTimestamp: '2025-07-07T00:55:46.911-07:00'
+description: ''
+direction: INGRESS
+disabled: false
+id: '360439804645000045'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: two-tier-vpc-allow-http
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/two-tier-vpc
+priority: 1000
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/firewalls/two-tier-vpc-allow-http
+sourceRanges:
+- 0.0.0.0/0
+targetTags:
+- http-server
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '443'
+creationTimestamp: '2025-07-07T00:55:46.282-07:00'
+description: ''
+direction: INGRESS
+disabled: false
+id: '4634508945128866669'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: two-tier-vpc-allow-https
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/two-tier-vpc
+priority: 1000
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/firewalls/two-tier-vpc-allow-https
+sourceRanges:
+- 0.0.0.0/0
+targetTags:
+- https-server
+
+--- NETWORKS ---
+
+---
+autoCreateSubnetworks: true
+creationTimestamp: '2025-07-03T13:46:54.660-07:00'
+description: Default network for the project
+id: '5487424974065717969'
+kind: compute#network
+name: default
+networkFirewallPolicyEnforcementOrder: AFTER_CLASSIC_FIREWALL
+routingConfig:
+  bgpBestPathSelectionMode: LEGACY
+  routingMode: REGIONAL
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+selfLinkWithId: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/5487424974065717969
+subnetworks:
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-east4/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west4/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west10/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-southwest1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west3/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/australia-southeast2/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/southamerica-east1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/africa-south1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west2/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-east1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west6/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/northamerica-northeast1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-west2/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-north1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-north2/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-south1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west9/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/northamerica-south1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/australia-southeast1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-central1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west12/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/northamerica-northeast2/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-central2/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-northeast1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/me-west1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-southeast1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/southamerica-west1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-west1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-south2/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west8/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/me-central1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-south1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-southeast2/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-northeast3/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-east5/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-northeast2/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-east2/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-east1/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-west3/subnetworks/default
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-west4/subnetworks/default
+x_gcloud_bgp_routing_mode: REGIONAL
+x_gcloud_subnet_mode: AUTO
+---
+autoCreateSubnetworks: false
+creationTimestamp: '2025-07-03T14:03:03.635-07:00'
+id: '962909410014482152'
+kind: compute#network
+name: two-tier-vpc
+networkFirewallPolicyEnforcementOrder: AFTER_CLASSIC_FIREWALL
+routingConfig:
+  bgpBestPathSelectionMode: LEGACY
+  routingMode: REGIONAL
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/two-tier-vpc
+selfLinkWithId: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/962909410014482152
+subnetworks:
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-central1/subnetworks/private-subnet
+- https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-central1/subnetworks/public-subnet
+x_gcloud_bgp_routing_mode: REGIONAL
+x_gcloud_subnet_mode: CUSTOM
+
+--- SUBNETS ---
+
+---
+creationTimestamp: '2025-07-03T13:47:04.081-07:00'
+fingerprint: hvkqOXWfu5A=
+gatewayAddress: 10.128.0.1
+id: '8237650176174150311'
+ipCidrRange: 10.128.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-central1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-central1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T14:04:39.227-07:00'
+fingerprint: 0qPU4Nu4oOk=
+gatewayAddress: 10.0.2.1
+id: '2261468045833358984'
+ipCidrRange: 10.0.2.0/24
+kind: compute#subnetwork
+name: private-subnet
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/two-tier-vpc
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-central1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-central1/subnetworks/private-subnet
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T14:04:40.056-07:00'
+fingerprint: TtYAE3BYUA8=
+gatewayAddress: 10.0.1.1
+id: '2850696769540148871'
+ipCidrRange: 10.0.1.0/24
+kind: compute#subnetwork
+name: public-subnet
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/two-tier-vpc
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-central1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-central1/subnetworks/public-subnet
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.191-07:00'
+fingerprint: ih222ta0svA=
+gatewayAddress: 10.132.0.1
+id: '419766625991611047'
+ipCidrRange: 10.132.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.281-07:00'
+fingerprint: QKZK5R737Xo=
+gatewayAddress: 10.138.0.1
+id: '2328518768861074087'
+ipCidrRange: 10.138.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-west1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-west1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.352-07:00'
+fingerprint: BMmdcMrTI9I=
+gatewayAddress: 10.140.0.1
+id: '8930324883717182119'
+ipCidrRange: 10.140.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-east1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-east1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.004-07:00'
+fingerprint: U3jFwLSwqIc=
+gatewayAddress: 10.142.0.1
+id: '1424656658198123175'
+ipCidrRange: 10.142.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-east1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-east1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.397-07:00'
+fingerprint: emPCW3Ctamo=
+gatewayAddress: 10.146.0.1
+id: '6704604605374485159'
+ipCidrRange: 10.146.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-northeast1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-northeast1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.419-07:00'
+fingerprint: ZQfM91iSuNI=
+gatewayAddress: 10.148.0.1
+id: '3760268369208234663'
+ipCidrRange: 10.148.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-southeast1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-southeast1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.039-07:00'
+fingerprint: Oq4svRAEaP8=
+gatewayAddress: 10.150.0.1
+id: '1985260270985630375'
+ipCidrRange: 10.150.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-east4
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-east4/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.479-07:00'
+fingerprint: rb0NMk9CcYs=
+gatewayAddress: 10.152.0.1
+id: '8205973014249689767'
+ipCidrRange: 10.152.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/australia-southeast1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/australia-southeast1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.191-07:00'
+fingerprint: kQkM_Hbp0x0=
+gatewayAddress: 10.154.0.1
+id: '6342446894186975911'
+ipCidrRange: 10.154.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west2
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west2/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.184-07:00'
+fingerprint: 6BSBflIYYj0=
+gatewayAddress: 10.156.0.1
+id: '7758842566271521447'
+ipCidrRange: 10.156.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west3
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west3/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.731-07:00'
+fingerprint: e4lnZqMZ2Y4=
+gatewayAddress: 10.158.0.1
+id: '5812451133906178727'
+ipCidrRange: 10.158.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/southamerica-east1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/southamerica-east1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.461-07:00'
+fingerprint: mqC_gJmlW44=
+gatewayAddress: 10.160.0.1
+id: '6532474823095571111'
+ipCidrRange: 10.160.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-south1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-south1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.199-07:00'
+fingerprint: Gv-KloQITko=
+gatewayAddress: 10.162.0.1
+id: '21503061776880295'
+ipCidrRange: 10.162.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/northamerica-northeast1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/northamerica-northeast1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.242-07:00'
+fingerprint: Fv1ZanLtznw=
+gatewayAddress: 10.164.0.1
+id: '913077236646236839'
+ipCidrRange: 10.164.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west4
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west4/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.290-07:00'
+fingerprint: BV7-Xilmq_g=
+gatewayAddress: 10.166.0.1
+id: '690023573326877351'
+ipCidrRange: 10.166.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-north1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-north1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.401-07:00'
+fingerprint: X3GzBBehe6c=
+gatewayAddress: 10.168.0.1
+id: '5313817117446591143'
+ipCidrRange: 10.168.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-west2
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-west2/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.367-07:00'
+fingerprint: 1EgJw9cnD-o=
+gatewayAddress: 10.170.0.1
+id: '6014677805022532263'
+ipCidrRange: 10.170.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-east2
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-east2/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.263-07:00'
+fingerprint: ZzSr1Rq3aNI=
+gatewayAddress: 10.172.0.1
+id: '3914582987920593575'
+ipCidrRange: 10.172.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west6
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west6/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.393-07:00'
+fingerprint: cpWPKLwWuzw=
+gatewayAddress: 10.174.0.1
+id: '6692078234471453351'
+ipCidrRange: 10.174.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-northeast2
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-northeast2/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.384-07:00'
+fingerprint: SVxyhoq5OCc=
+gatewayAddress: 10.178.0.1
+id: '869888226633667239'
+ipCidrRange: 10.178.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-northeast3
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-northeast3/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.213-07:00'
+fingerprint: 77pc5ZUWcPc=
+gatewayAddress: 10.180.0.1
+id: '7194344685161894567'
+ipCidrRange: 10.180.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-west3
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-west3/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.270-07:00'
+fingerprint: Dc3ExGQP7NA=
+gatewayAddress: 10.182.0.1
+id: '2972638695029166759'
+ipCidrRange: 10.182.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-west4
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-west4/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.705-07:00'
+fingerprint: hA7e9jk08-E=
+gatewayAddress: 10.184.0.1
+id: '2664895462112973479'
+ipCidrRange: 10.184.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-southeast2
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-southeast2/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.289-07:00'
+fingerprint: U7nL5rhSEKI=
+gatewayAddress: 10.186.0.1
+id: '2056212834362806951'
+ipCidrRange: 10.186.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-central2
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-central2/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.231-07:00'
+fingerprint: krGk4P5bw4c=
+gatewayAddress: 10.188.0.1
+id: '126076139520873127'
+ipCidrRange: 10.188.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/northamerica-northeast2
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/northamerica-northeast2/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.541-07:00'
+fingerprint: XSzpVhyvjMo=
+gatewayAddress: 10.190.0.1
+id: '2370163604986745511'
+ipCidrRange: 10.190.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-south2
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/asia-south2/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:05.098-07:00'
+fingerprint: qMR5dTGGN90=
+gatewayAddress: 10.192.0.1
+id: '1481954403849818790'
+ipCidrRange: 10.192.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/australia-southeast2
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/australia-southeast2/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:05.388-07:00'
+fingerprint: dljO281Hry4=
+gatewayAddress: 10.194.0.1
+id: '1644716222506029734'
+ipCidrRange: 10.194.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/southamerica-west1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/southamerica-west1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.309-07:00'
+fingerprint: hcvgu_Hn6HM=
+gatewayAddress: 10.198.0.1
+id: '7097552361581400743'
+ipCidrRange: 10.198.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west8
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west8/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.324-07:00'
+fingerprint: OsoSbovUXAs=
+gatewayAddress: 10.200.0.1
+id: '1927837314152354471'
+ipCidrRange: 10.200.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west9
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west9/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.249-07:00'
+fingerprint: N_hACM-JC6o=
+gatewayAddress: 10.202.0.1
+id: '6031922330644206247'
+ipCidrRange: 10.202.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-east5
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-east5/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.318-07:00'
+fingerprint: mlVZAi5OxVE=
+gatewayAddress: 10.204.0.1
+id: '4425866795463430823'
+ipCidrRange: 10.204.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-southwest1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-southwest1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.189-07:00'
+fingerprint: Yxig_hbs09E=
+gatewayAddress: 10.206.0.1
+id: '1410752569160716967'
+ipCidrRange: 10.206.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-south1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/us-south1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.399-07:00'
+fingerprint: SZe4LinofHg=
+gatewayAddress: 10.208.0.1
+id: '2289127012449342119'
+ipCidrRange: 10.208.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/me-west1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/me-west1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.359-07:00'
+fingerprint: ps6WVk185Cw=
+gatewayAddress: 10.210.0.1
+id: '6391641290681569959'
+ipCidrRange: 10.210.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west12
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west12/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.438-07:00'
+fingerprint: Ghx9A_DrB4A=
+gatewayAddress: 10.212.0.1
+id: '9096813647359595175'
+ipCidrRange: 10.212.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/me-central1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/me-central1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.300-07:00'
+fingerprint: BS_zsm9r8_Y=
+gatewayAddress: 10.214.0.1
+id: '6061482546138141351'
+ipCidrRange: 10.214.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west10
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-west10/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:05.697-07:00'
+fingerprint: DTKjxVj1Oag=
+gatewayAddress: 10.218.0.1
+id: '8632604781619925670'
+ipCidrRange: 10.218.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/africa-south1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/africa-south1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.708-07:00'
+fingerprint: eXsHfSvyWTQ=
+gatewayAddress: 10.224.0.1
+id: '1244883139802387111'
+ipCidrRange: 10.224.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/northamerica-south1
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/northamerica-south1/subnetworks/default
+stackType: IPV4_ONLY
+---
+creationTimestamp: '2025-07-03T13:47:04.369-07:00'
+fingerprint: bGWHhue0EXU=
+gatewayAddress: 10.226.0.1
+id: '817194797592433319'
+ipCidrRange: 10.226.0.0/20
+kind: compute#subnetwork
+name: default
+network: https://www.googleapis.com/compute/v1/projects/gcp-sparta/global/networks/default
+privateIpGoogleAccess: false
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-north2
+selfLink: https://www.googleapis.com/compute/v1/projects/gcp-sparta/regions/europe-north2/subnetworks/default
+stackType: IPV4_ONLY
